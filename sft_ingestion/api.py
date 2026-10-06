@@ -129,6 +129,12 @@ class CurvesResponse(BaseModel):
     curves: list[CurveGroup]
 
 
+class PairedCurvesResponse(BaseModel):
+    visit_id: int
+    pre: CurvesResponse | None = None
+    post: CurvesResponse | None = None
+
+
 class UploadResult(BaseModel):
     filename: str
     sha256: str
@@ -626,39 +632,7 @@ def export_cohort(
 
 
 # ---------------------------------------------------------------------------
-# ENDPOINT 3: GET /api/curves/{trial_id}
-# ---------------------------------------------------------------------------
-@app.get(
-    "/api/curves/{trial_id}",
-    response_model=CurvesResponse,
-    summary="Deneme eğri koordinatlarını grafik-uyumlu JSON olarak döndür",
-    tags=["Eğri Görselleştirme"],
-)
-def get_curves(
-    trial_id: int,
-    scope: str | None = Query(
-        "REPORT",
-        description="Eğri kapsamı: REPORT (görselleştirme ~200 pt) | RAW (arşiv 250 Hz) | ALL",
-    ),
-) -> CurvesResponse:
-    """
-    Belirli bir trial'ın akış-hacim eğri koordinatlarını döndürür.
-
-    `scope=REPORT` (varsayılan): Poliklinikte eğri çizimi için optimize edilmiş ~200 nokta.
-    `scope=RAW`   : Ham zaman-hacim verisi (250 Hz), bilimsel analiz için.
-    `scope=ALL`   : Tüm eğriler.
-
-    Dönen `points` listesi `[{"x": float, "y": float}, ...]` formatındadır;
-    Recharts, Chart.js, Plotly gibi kütüphanelerle doğrudan kullanılabilir.
-    """
-    allowed_scopes = {"REPORT", "RAW", "ALL"}
-    scope_upper = (scope or "REPORT").upper()
-    if scope_upper not in allowed_scopes:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Geçersiz scope: '{scope}'. Geçerli değerler: REPORT, RAW, ALL",
-        )
-
+def _fetch_trial_curves_data(conn, trial_id: int, scope_upper: str = "REPORT") -> CurvesResponse | None:
     if scope_upper == "ALL":
         scope_filter = ""
         scope_params: list[Any] = [trial_id]
@@ -685,31 +659,17 @@ def get_curves(
         ORDER BY curve_scope DESC, curve_type
     """
 
-    conn = _get_conn()
-    try:
-        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-            cur.execute(sql, scope_params)
-            rows = cur.fetchall()
-    except Exception as exc:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Eğri verisi alınamadı: {exc}",
-        )
-    finally:
-        conn.close()
+    with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+        cur.execute(sql, scope_params)
+        rows = cur.fetchall()
 
     if not rows:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"trial_id={trial_id} için eğri bulunamadı.",
-        )
+        return None
 
     curve_groups: list[CurveGroup] = []
     for row in rows:
         xs: list[float] = list(row["x_points"]) if row["x_points"] else []
         ys: list[float] = list(row["y_points"]) if row["y_points"] else []
-
-        # Koordinat uzunlukları eşleşmeli
         n = min(len(xs), len(ys))
         points = [CurvePoint(x=xs[i], y=ys[i]) for i in range(n)]
 
@@ -729,6 +689,72 @@ def get_curves(
         )
 
     return CurvesResponse(trial_id=trial_id, curves=curve_groups)
+
+
+@app.get(
+    "/api/curves/{trial_id}",
+    response_model=CurvesResponse,
+    summary="Deneme eğri koordinatlarını grafik-uyumlu JSON olarak döndür",
+    tags=["Eğri Görselleştirme"],
+)
+def get_curves(
+    trial_id: int,
+    scope: str | None = Query(
+        "REPORT",
+        description="Eğri kapsamı: REPORT (görselleştirme ~200 pt) | RAW (arşiv 250 Hz) | ALL",
+    ),
+) -> CurvesResponse:
+    allowed_scopes = {"REPORT", "RAW", "ALL"}
+    scope_upper = (scope or "REPORT").upper()
+    if scope_upper not in allowed_scopes:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Geçersiz scope: '{scope}'. Geçerli değerler: REPORT, RAW, ALL",
+        )
+
+    conn = _get_conn()
+    try:
+        curves = _fetch_trial_curves_data(conn, trial_id, scope_upper)
+        if not curves:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"trial_id={trial_id} için eğri bulunamadı.",
+            )
+        return curves
+    finally:
+        conn.close()
+
+
+@app.get(
+    "/api/paired-curves/{visit_id}",
+    response_model=PairedCurvesResponse,
+    summary="Bir ziyaretin hem Pre hem Post eğrilerini birlikte döndür",
+    tags=["Eğri Görselleştirme"],
+)
+def get_paired_curves(visit_id: int) -> PairedCurvesResponse:
+    conn = _get_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT level_type, trial_id FROM mv_spirometry_best_trial WHERE visit_id = %s",
+                (visit_id,),
+            )
+            rows = cur.fetchall()
+
+        pre_trial_id: int | None = None
+        post_trial_id: int | None = None
+        for lt, tid in rows:
+            if lt in ("Pre", "pre"):
+                pre_trial_id = tid
+            elif lt in ("Post", "post"):
+                post_trial_id = tid
+
+        pre_curves = _fetch_trial_curves_data(conn, pre_trial_id) if pre_trial_id else None
+        post_curves = _fetch_trial_curves_data(conn, post_trial_id) if post_trial_id else None
+
+        return PairedCurvesResponse(visit_id=visit_id, pre=pre_curves, post=post_curves)
+    finally:
+        conn.close()
 
 
 # ---------------------------------------------------------------------------

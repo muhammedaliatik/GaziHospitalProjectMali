@@ -251,6 +251,15 @@ def ingest_directory(
         else:
             summary.failed += 1
 
+    if not dry_run and summary.success > 0:
+        try:
+            with conn.cursor() as cur:
+                cur.execute("REFRESH MATERIALIZED VIEW mv_spirometry_best_trial;")
+            conn.commit()
+            logger.info("mv_spirometry_best_trial materialized view yenilendi.")
+        except Exception as exc:
+            logger.warning("Materialized view yenilenemedi: %s", exc)
+
     summary.finished_at = datetime.now(tz=timezone.utc).isoformat()
     return summary
 

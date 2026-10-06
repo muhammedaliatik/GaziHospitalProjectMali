@@ -6,7 +6,7 @@
 // ─────────────────────────────────────────────────────────────
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { fetchCohort, fetchCurves } from './api/client';
+import { fetchCohort, fetchCurves, fetchPairedCurves } from './api/client';
 import { CohortTable } from './components/CohortTable';
 import { CurvePanel } from './components/CurvePanel';
 import { FilterPanel } from './components/FilterPanel';
@@ -89,7 +89,7 @@ export default function App() {
       if (res.results.length > 0 && !selectedRow) {
         const first = res.results[0];
         setSelectedRow(first);
-        loadCurvesForPatient(first, res);
+        loadCurvesForPatient(first);
       }
     } catch (e: any) {
       if (fetchIdRef.current !== id) return;
@@ -112,32 +112,13 @@ export default function App() {
     runCohortQuery(DEFAULT_FILTERS);
   }, [runCohortQuery]);
 
-  // ─── Eğri Yükleme Yardımcısı ────────────────────────────────
-  const loadCurvesForPatient = async (row: CohortPatient, cohortRes = cohortData) => {
+  // ─── Eğri Yükleme Yardımcısı (Hem Pre hem Post Eğrileri Eşzamanlı Yüklenir) ─────
+  const loadCurvesForPatient = async (row: CohortPatient) => {
     setCurvesLoading(true);
     try {
-      const curves = await fetchCurves(row.trial_id, 'REPORT');
-      setCurvesData(curves);
-
-      // Karşı seviyeyi (Pre ↔ Post) bul
-      const counterLevelType = row.level_type === 'Pre' ? 'Post' : 'Pre';
-      const counterRow = cohortRes?.results.find(
-        r =>
-          r.patient_id === row.patient_id &&
-          r.visit_id === row.visit_id &&
-          r.level_type === counterLevelType,
-      );
-
-      if (counterRow) {
-        try {
-          const counterCurves = await fetchCurves(counterRow.trial_id, 'REPORT');
-          setPostCurvesData(counterCurves);
-        } catch {
-          setPostCurvesData(null);
-        }
-      } else {
-        setPostCurvesData(null);
-      }
+      const paired = await fetchPairedCurves(row.visit_id);
+      setCurvesData(paired.pre);
+      setPostCurvesData(paired.post);
     } catch (err: any) {
       console.warn('Eğri yükleme hatası:', err?.message);
       setCurvesData(null);

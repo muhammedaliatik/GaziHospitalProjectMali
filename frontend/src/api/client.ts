@@ -70,6 +70,12 @@ export async function fetchCohort(
   }
 }
 
+export interface PairedCurvesResponse {
+  visit_id: number;
+  pre: CurvesResponse | null;
+  post: CurvesResponse | null;
+}
+
 // ─── Eğri Verisi ─────────────────────────────────────────────
 export async function fetchCurves(
   trialId: number,
@@ -79,6 +85,15 @@ export async function fetchCurves(
     const { data } = await api.get<CurvesResponse>(`/api/curves/${trialId}`, {
       params: { scope },
     });
+    return data;
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+export async function fetchPairedCurves(visitId: number): Promise<PairedCurvesResponse> {
+  try {
+    const { data } = await api.get<PairedCurvesResponse>(`/api/paired-curves/${visitId}`);
     return data;
   } catch (e) {
     return handleError(e);
