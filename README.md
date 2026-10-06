@@ -22,11 +22,14 @@ Bu proje, Gazi Üniversitesi Çocuk Alerji Bilim Dalı bünyesinde kullanılan *
 │   ├── src/
 │   │   ├── components/
 │   │   │   ├── Header.tsx     # Kurumsal Gazi üst barı & canlı sağlık durumu
+│   │   │   ├── LeftSidebar.tsx# Poliklinik menü ve navigasyon çubuğu
 │   │   │   ├── FilterPanel.tsx# Yaş, cinsiyet, FEV1 %pred, reversibilite filtreleri
 │   │   │   ├── CohortTable.tsx# Dinamik hasta tablosu & ATS/ERS ciddiyet rozetleri
+│   │   │   ├── PatientBanner.tsx # Seçili hasta detay ve klinik özet bandı
 │   │   │   ├── CurvePanel.tsx # Recharts Akış-Hacim eğrisi (Pre Mavi + Post Turuncu)
+│   │   │   ├── ReportModal.tsx# Hekim klinik karar destek rapor modalı
 │   │   │   └── UploadModal.tsx# Sürükle-bırak XML yükleme modalı
-│   │   ├── api/client.ts      # Merkezi API istemcisi
+│   │   ├── api/client.ts      # Merkezi API istemcisi (REST & Paired Curves)
 │   │   ├── types/index.ts     # TypeScript arayüzleri ve ATS/ERS yardımcıları
 │   │   ├── App.tsx            # Ana uygulama koordinatörü
 │   │   └── index.css          # Tıbbi tasarım sistemi stilleri
