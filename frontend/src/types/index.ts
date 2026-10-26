@@ -1,6 +1,7 @@
 // ─────────────────────────────────────────────────────────────
 // types/index.ts
-// Gazi SFT Portal — Merkezi TypeScript Tip Tanımları
+// AEROFLOW PULSE DX — Pediatric Pulmonary Dynamics Platform
+// Merkezi TypeScript Tip Tanımları & Klinik Yardımcılar
 // ─────────────────────────────────────────────────────────────
 
 // ─── API: Kohort ─────────────────────────────────────────────
@@ -59,6 +60,12 @@ export interface CurvesResponse {
   curves: CurveGroup[];
 }
 
+export interface PairedCurvesResponse {
+  visit_id: number;
+  pre: CurvesResponse | null;
+  post: CurvesResponse | null;
+}
+
 // ─── API: Upload ─────────────────────────────────────────────
 export interface UploadResult {
   filename: string;
@@ -115,22 +122,28 @@ export function fev1Severity(pct: number | null): SeverityLevel {
 }
 
 export function severityLabel(s: SeverityLevel): string {
-  return { normal: 'Normal', mild: 'Hafif', moderate: 'Orta', severe: 'Ağır', unknown: '—' }[s];
+  return {
+    normal: 'Normal',
+    mild: 'Hafif',
+    moderate: 'Orta',
+    severe: 'Ağır',
+    unknown: '—',
+  }[s];
 }
 
 export function severityClass(s: SeverityLevel): string {
   return {
-    normal:   'badge badge-normal',
-    mild:     'badge badge-mild',
-    moderate: 'badge badge-moderate',
-    severe:   'badge badge-severe',
-    unknown:  'badge badge-unknown',
+    normal:   'badge-cyber badge-cyber-normal',
+    mild:     'badge-cyber badge-cyber-mild',
+    moderate: 'badge-cyber badge-cyber-moderate',
+    severe:   'badge-cyber badge-cyber-severe',
+    unknown:  'badge-cyber badge-cyber-muted',
   }[s];
 }
 
 export function formatName(p: CohortPatient): string {
   const parts = [p.first_name, p.last_name].filter(Boolean);
-  return parts.length ? parts.join(' ') : '—';
+  return parts.length ? parts.join(' ') : 'İsimsiz Kayıt';
 }
 
 export function formatGender(g: string | null): string {
@@ -143,25 +156,17 @@ export function formatNum(val: number | null, decimals = 2): string {
   return val.toFixed(decimals);
 }
 
-// ─── HBYS UI Tipleri ──────────────────────────────────────────
-export type HbysMainTab = 
-  | 'hasta_detay'
-  | 'basvuru_listesi'
-  | 'sft_kohort'
-  | 'akis_hacim'
-  | 'konsultasyon'
-  | 'randevu'
-  | 'muayene'
-  | 'fatura'
-  | 'medikal_rapor'
-  | 'arsiv';
+// ─── Navigation Tabs ──────────────────────────────────────────
+export type AppTab =
+  | 'telemetry'        // Kohort Telemetrisi & Keşif Paneli
+  | 'spectral_curves'  // Akış-Hacim Spektrogramı (Pre/Post İkili Analiz)
+  | 'clinical_ai'      // Klinik Karar Destek & Otomatik Raporlama
+  | 'ingestion_hub'    // XML Almaç & Cihaz Entegrasyon Terminali
+  | 'research_export'; // Araştırma Veri Havuzu & Excel Dışa Aktarımı
 
-export type HbysSubTab =
-  | 'ozet'
-  | 'sft_parametreleri'
-  | 'arsiv_dosya'
-  | 'ileri_tarihli'
-  | 'farkli_merkez';
+// Geriye dönük uyumluluk tipleri
+export type HbysMainTab = string;
+export type HbysSubTab = string;
 
 export interface RecentPatientItem {
   patient_id: number;
@@ -169,5 +174,6 @@ export interface RecentPatientItem {
   name: string;
   gender: string | null;
   age: number | null;
+  fev1_pred_percent?: number | null;
+  reversibility?: boolean | null;
 }
-

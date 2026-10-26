@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Reset & Base ─────────────────────────────────────────── */
+/* ─── Futuristic Base Reset ─────────────────────────────────── */
 *, *::before, *::after {
   box-sizing: border-box;
 }
@@ -11,377 +11,183 @@ html, body, #root {
   height: 100%;
   margin: 0;
   padding: 0;
-  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Inter', Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #D3DFEE;
-  color: #1A2838;
-  font-size: 12px;
-  user-select: none;
+  background-color: #080C14;
+  color: #E2E8F0;
+  font-size: 13px;
+  overflow: hidden;
 }
 
-/* ─── Compact Desktop Scrollbars ───────────────────────────── */
+/* ─── Ambient Glow Background Mesh ─────────────────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  top: -10%;
+  left: 20%;
+  width: 60vw;
+  height: 50vh;
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.05) 0%, rgba(8, 12, 20, 0) 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  bottom: -10%;
+  right: 15%;
+  width: 50vw;
+  height: 50vh;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.04) 0%, rgba(8, 12, 20, 0) 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Futuristic Scrollbar ──────────────────────────────────── */
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #E8EEF5;
-  border-left: 1px solid #CAD7E6;
+  background: #0B111E;
 }
 ::-webkit-scrollbar-thumb {
-  background: #9DB5D0;
-  border-radius: 2px;
-  border: 2px solid #E8EEF5;
+  background: #1E293B;
+  border-radius: 9999px;
+  border: 1px solid #0F172A;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #6F8FA8;
+  background: #06B6D4;
 }
 
-/* ─── Gazi HBYS Desktop Styling System ──────────────────────── */
+/* ─── Glassmorphism & Cyber UI Tokens ───────────────────────── */
 @layer components {
-  /* System window titlebar */
-  .hbys-sys-titlebar {
-    background: linear-gradient(180deg, #1C4474 0%, #0F2D52 100%);
-    color: #FFFFFF;
-    border-bottom: 1px solid #081B33;
+  /* Glass card container */
+  .glass-card {
+    background: rgba(14, 20, 36, 0.72);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
   }
 
-  /* Subwindow / MDI titlebar */
-  .hbys-window-titlebar {
-    background: linear-gradient(180deg, #376395 0%, #1E4675 100%);
-    color: #FFFFFF;
-    border-bottom: 1px solid #143257;
+  .glass-card-hover {
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .glass-card-hover:hover {
+    border-color: rgba(6, 182, 212, 0.35);
+    box-shadow: 0 12px 36px -4px rgba(6, 182, 212, 0.15);
+    transform: translateY(-1px);
   }
 
-  /* Desktop Menu bar */
-  .hbys-menubar {
-    background: linear-gradient(180deg, #F0F4F8 0%, #DEE6F0 100%);
-    border-bottom: 1px solid #B4C6D8;
+  .glass-hud {
+    background: linear-gradient(180deg, rgba(16, 24, 43, 0.9) 0%, rgba(10, 15, 28, 0.95) 100%);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(30, 41, 59, 0.8);
   }
 
-  .hbys-menu-item {
-    @apply px-2.5 py-1 text-xs text-[#1D3249] cursor-pointer transition-colors duration-75 select-none;
-  }
-  .hbys-menu-item:hover {
-    background: #CBE0F5;
-    color: #002B5E;
+  /* Cyber Buttons */
+  .btn-cyber {
+    @apply inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold
+           transition-all duration-200 select-none disabled:opacity-50 disabled:pointer-events-none;
   }
 
-  /* Desktop Toolbar */
-  .hbys-toolbar {
-    background: linear-gradient(180deg, #FAFBFD 0%, #E6EDF5 100%);
-    border-bottom: 1px solid #BACBDB;
+  .btn-cyber-primary {
+    @apply bg-cyan-500/10 text-cyan-400 border border-cyan-500/40 hover:bg-cyan-500/20 hover:border-cyan-400
+           hover:shadow-[0_0_15px_rgba(6,182,212,0.3)] active:scale-[0.98];
   }
 
-  .hbys-tool-btn {
-    @apply inline-flex items-center gap-1.5 px-2 py-1 text-xs text-[#20364F] rounded border border-transparent
-           hover:border-[#96B2CF] hover:bg-white/80 active:bg-[#CADDF0] active:border-[#6B90B8]
-           transition-all select-none;
+  .btn-cyber-solid {
+    @apply bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold hover:from-cyan-400 hover:to-blue-500
+           shadow-[0_0_20px_rgba(6,182,212,0.4)] active:scale-[0.98];
   }
 
-  /* HBYS Main Module Tabs (Top Tabs) */
-  .hbys-tab {
-    @apply px-3 py-1.5 text-xs font-semibold select-none cursor-pointer border border-b-0 border-[#A6BED4]
-           bg-gradient-to-b from-[#EDF3FA] to-[#D5E2F0] text-[#2C4866] rounded-t
-           hover:from-[#F7FAFD] hover:to-[#E2ECF7] hover:text-[#0C2B4E] transition-all;
-  }
-  .hbys-tab.active {
-    @apply bg-white from-white to-white text-[#003366] border-t-2 border-t-[#C5A059] border-x-[#9BB5CD]
-           shadow-[0_-2px_4px_rgba(0,0,0,0.04)] font-bold;
-    margin-bottom: -1px;
-    z-index: 10;
+  .btn-cyber-outline {
+    @apply bg-slate-900/60 text-slate-300 border border-slate-700/80 hover:bg-slate-800/80 hover:border-slate-500
+           hover:text-white active:scale-[0.98];
   }
 
-  /* HBYS Sub Tabs */
-  .hbys-subtab {
-    @apply px-2.5 py-1 text-xs select-none cursor-pointer border border-[#AEC5DC] bg-[#E8F0F8] text-[#345272]
-           hover:bg-[#F2F7FC] hover:text-[#0E335C] rounded-sm transition-all;
-  }
-  .hbys-subtab.active {
-    @apply bg-white text-[#003366] font-bold border-b-2 border-b-[#003366] shadow-sm;
+  .btn-cyber-amber {
+    @apply bg-amber-500/10 text-amber-400 border border-amber-500/40 hover:bg-amber-500/20 hover:border-amber-400
+           hover:shadow-[0_0_15px_rgba(245,158,11,0.3)] active:scale-[0.98];
   }
 
-  /* Hasta Künye Bandı (Patient Banner) */
-  .hbys-kunye-band {
-    background: linear-gradient(180deg, #FFFFFF 0%, #E8F1FA 100%);
-    border: 1px solid #99BDE0;
-    box-shadow: inset 0 1px 0 #FFFFFF, 0 1px 3px rgba(0, 51, 102, 0.08);
+  .btn-cyber-danger {
+    @apply bg-rose-500/10 text-rose-400 border border-rose-500/40 hover:bg-rose-500/20 hover:border-rose-400
+           hover:shadow-[0_0_15px_rgba(244,63,94,0.3)] active:scale-[0.98];
   }
 
-  /* Gazi HBYS Data Table */
-  .hbys-table {
-    border-collapse: separate;
-    border-spacing: 0;
-    width: 100%;
-    font-size: 11px;
+  /* Cyber Form Elements */
+  .input-cyber {
+    @apply bg-slate-950/70 text-slate-100 placeholder-slate-500 border border-slate-700/80 rounded-lg px-2.5 py-1.5
+           text-xs outline-none transition-all duration-200 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/40;
   }
 
-  .hbys-th {
-    background: linear-gradient(180deg, #F4F8FC 0%, #D8E6F5 100%);
-    border-right: 1px solid #B2C7DC;
-    border-bottom: 1px solid #9EB8D1;
-    color: #103358;
-    font-weight: 600;
-    padding: 3px 6px;
-    text-align: left;
-    white-space: nowrap;
-    user-select: none;
-    font-size: 11px;
-  }
-  .hbys-th:last-child {
-    border-right: none;
-  }
-  .hbys-th:hover {
-    background: linear-gradient(180deg, #FFFFFF 0%, #E2EDF9 100%);
+  .select-cyber {
+    @apply bg-slate-950/70 text-slate-100 border border-slate-700/80 rounded-lg px-2.5 py-1.5 text-xs outline-none
+           transition-all duration-200 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/40 cursor-pointer;
   }
 
-  .hbys-td {
-    border-right: 1px solid #DFE7F0;
-    border-bottom: 1px solid #DFE7F0;
-    padding: 3px 6px;
-    white-space: nowrap;
-    font-size: 11px;
-    color: #172B3E;
-  }
-  .hbys-td:last-child {
-    border-right: none;
+  /* Cyber Badges */
+  .badge-cyber {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-mono font-medium tracking-wide border;
   }
 
-  .hbys-tr {
-    background-color: #FFFFFF;
-    cursor: pointer;
-  }
-  .hbys-tr:nth-child(even) {
-    background-color: #F8FAFD;
-  }
-  .hbys-tr:hover .hbys-td {
-    background-color: #E6F0FA !important;
-  }
-  .hbys-tr.selected .hbys-td {
-    background-color: #CCE2F7 !important;
-    color: #06264A !important;
-    font-weight: 600;
+  .badge-cyber-normal {
+    @apply bg-emerald-500/10 text-emerald-400 border-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.15)];
   }
 
-  /* Groupbox / Fieldset */
-  .hbys-groupbox {
-    border: 1px solid #9DBAD6;
-    border-radius: 3px;
-    padding: 6px 8px 8px 8px;
-    margin-bottom: 6px;
-    background-color: #FCFDFE;
-  }
-  .hbys-legend {
-    font-size: 11px;
-    font-weight: 600;
-    color: #113862;
-    padding: 0 4px;
-    margin-left: 4px;
+  .badge-cyber-mild {
+    @apply bg-amber-500/10 text-amber-300 border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.15)];
   }
 
-  /* Input & Select */
-  .hbys-input {
-    background-color: #FFFFFF;
-    border: 1px solid #84A3C2;
-    border-radius: 2px;
-    padding: 2px 5px;
-    font-size: 11px;
-    color: #11283F;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
-    outline: none;
-  }
-  .hbys-input:focus {
-    border-color: #1E66B6;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08), 0 0 0 1px #1E66B6;
+  .badge-cyber-moderate {
+    @apply bg-orange-500/10 text-orange-400 border-orange-500/30 shadow-[0_0_10px_rgba(249,115,22,0.15)];
   }
 
-  .hbys-select {
-    background-color: #FFFFFF;
-    border: 1px solid #84A3C2;
-    border-radius: 2px;
-    padding: 2px 4px;
-    font-size: 11px;
-    color: #11283F;
-    outline: none;
-  }
-  .hbys-select:focus {
-    border-color: #1E66B6;
+  .badge-cyber-severe {
+    @apply bg-rose-500/10 text-rose-400 border-rose-500/30 shadow-[0_0_10px_rgba(244,63,94,0.2)];
   }
 
-  /* Buttons */
-  .hbys-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    background: linear-gradient(180deg, #FFFFFF 0%, #DFE8F2 100%);
-    border: 1px solid #7E9EBE;
-    border-radius: 3px;
-    padding: 3px 10px;
-    font-size: 11px;
-    font-weight: 600;
-    color: #143355;
-    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08);
-    cursor: pointer;
-    user-select: none;
-    transition: all 0.08s ease-in-out;
-  }
-  .hbys-btn:hover {
-    background: linear-gradient(180deg, #FFFFFF 0%, #CCE0F5 100%);
-    border-color: #5880A8;
-    color: #0A2644;
-  }
-  .hbys-btn:active {
-    background: linear-gradient(180deg, #C2D8EE 0%, #D8E6F5 100%);
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15);
-  }
-  .hbys-btn:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-    background: #E8EEF5;
-    border-color: #B8CADC;
+  .badge-cyber-muted {
+    @apply bg-slate-800/40 text-slate-400 border-slate-700/50;
   }
 
-  .hbys-btn-primary {
-    background: linear-gradient(180deg, #245890 0%, #0F3763 100%);
-    border: 1px solid #0B2544;
-    color: #FFFFFF;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-  }
-  .hbys-btn-primary:hover {
-    background: linear-gradient(180deg, #2E6CAE 0%, #15457C 100%);
-    border-color: #0E3056;
-    color: #FFFFFF;
-  }
-  .hbys-btn-primary:active {
-    background: linear-gradient(180deg, #0E345E 0%, #194676 100%);
+  .badge-cyber-cyan {
+    @apply bg-cyan-500/10 text-cyan-400 border-cyan-500/30 shadow-[0_0_10px_rgba(6,182,212,0.2)];
   }
 
-  .hbys-btn-success {
-    background: linear-gradient(180deg, #2C9E4B 0%, #1B7834 100%);
-    border: 1px solid #145927;
-    color: #FFFFFF;
+  /* Table Cyber */
+  .table-cyber {
+    @apply w-full text-left border-collapse text-xs;
   }
-  .hbys-btn-success:hover {
-    background: linear-gradient(180deg, #35B457 0%, #208D3E 100%);
+  .th-cyber {
+    @apply px-3 py-2.5 bg-slate-950/70 text-slate-400 font-semibold tracking-wider uppercase text-[10px]
+           border-b border-slate-800/80 select-none;
   }
-
-  .hbys-btn-danger {
-    background: linear-gradient(180deg, #DC3545 0%, #BD2130 100%);
-    border: 1px solid #9C1926;
-    color: #FFFFFF;
+  .td-cyber {
+    @apply px-3 py-2 border-b border-slate-800/40 text-slate-300 align-middle;
   }
-  .hbys-btn-danger:hover {
-    background: linear-gradient(180deg, #E44857 0%, #CB2837 100%);
+  .tr-cyber {
+    @apply transition-colors duration-100 hover:bg-cyan-950/20 cursor-pointer;
   }
-
-  /* Badges & Severity Indicators */
-  .badge {
-    @apply inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold tracking-tight;
-  }
-  .badge-normal   { @apply text-emerald-800 bg-emerald-100 border border-emerald-300; }
-  .badge-mild     { @apply text-amber-900 bg-amber-100 border border-amber-300; }
-  .badge-moderate { @apply text-orange-900 bg-orange-100 border border-orange-300; }
-  .badge-severe   { @apply text-red-900 bg-red-100 border border-red-300; }
-  .badge-unknown  { @apply text-slate-700 bg-slate-100 border border-slate-300; }
-
-  /* Context Menu */
-  .hbys-context-menu {
-    position: fixed;
-    z-index: 100;
-    background: #FFFFFF;
-    border: 1px solid #7192B3;
-    box-shadow: 2px 3px 8px rgba(0, 30, 60, 0.22);
-    min-width: 220px;
-    padding: 3px 0;
-    border-radius: 2px;
-    font-size: 11px;
-  }
-  .hbys-context-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 4px 12px;
-    color: #1A2838;
-    cursor: pointer;
-    user-select: none;
-  }
-  .hbys-context-item:hover {
-    background-color: #1D5C9E;
-    color: #FFFFFF;
-  }
-  .hbys-context-divider {
-    height: 1px;
-    background-color: #E1E8F0;
-    margin: 3px 0;
-  }
-
-  /* Statusbar & Taskbar */
-  .hbys-taskbar {
-    background: linear-gradient(180deg, #E8EFF6 0%, #D0DFEE 100%);
-    border-top: 1px solid #A4BDD5;
-  }
-  .hbys-task-btn {
-    @apply inline-flex items-center gap-1.5 px-3 py-1 text-xs border border-[#8DA9C5] bg-white/70
-           hover:bg-white text-[#123152] font-medium shadow-sm transition-all;
-  }
-  .hbys-task-btn.active {
-    @apply bg-gradient-to-b from-[#CCE2F7] to-[#B3D3F2] border-[#557FAD] font-bold text-[#062444]
-           shadow-inner;
-  }
-
-  .hbys-status-panel {
-    border: 1px solid #B0C4D8;
-    border-top-color: #92ABC3;
-    border-left-color: #92ABC3;
-    background-color: #EDF3F9;
-    padding: 1px 6px;
-    font-size: 10.5px;
-    color: #27425F;
+  .tr-cyber-selected {
+    @apply bg-cyan-950/40 border-l-2 border-l-cyan-400;
   }
 }
 
-/* ─── Recharts Styling inside HBYS ──────────────────────────── */
-.recharts-cartesian-grid-horizontal line,
-.recharts-cartesian-grid-vertical line {
-  stroke: #D2DFEE;
-  stroke-dasharray: 2 2;
-}
-.recharts-text {
-  font-family: 'Segoe UI', system-ui, sans-serif;
-  font-size: 10px;
-  fill: #345272;
-}
-.recharts-tooltip-wrapper {
-  z-index: 60;
-}
-
-/* ─── Animation effects ─────────────────────────────────────── */
-.animate-fade-in {
-  animation: fadeIn 0.12s ease-out;
-}
-.animate-slide-up {
-  animation: slideUp 0.15s ease-out;
-}
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* ─── Spinner ───────────────────────────────────────────────── */
-.spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid #ADC3DA;
-  border-top-color: #003366;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-@keyframes spin {
-  to { transform: rotate(360deg); }
+/* ─── Printable Medical Report Styles ───────────────────────── */
+@media print {
+  body {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
 }

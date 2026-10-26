@@ -1,47 +1,47 @@
 // ─────────────────────────────────────────────────────────────
 // components/Header.tsx
-// Gazi HBYS NUCLEUS v9.40.66 Üst Sistem Başlığı, Menü Çubuğu ve Araç Çubuğu
-// (Screenshot 1, 2, 3, 4 referanslı)
+// AEROFLOW PULSE DX — Futuristic Command Header & Telemetry Bar
 // ─────────────────────────────────────────────────────────────
 
 import { useEffect, useState } from 'react';
 import {
   Activity,
-  Download,
   Upload,
-  Wifi,
-  WifiOff,
-  Printer,
-  Save,
-  Search,
   RefreshCw,
-  FolderOpen,
   FileSpreadsheet,
-  Settings,
-  HelpCircle,
-  Calculator,
-  Minus,
-  Square,
-  X,
   FileText,
+  BarChart3,
+  TrendingUp,
+  BrainCircuit,
+  Database,
+  Cpu,
+  ShieldCheck,
+  CheckCircle2,
+  AlertCircle,
 } from 'lucide-react';
 import { fetchHealth, buildExportUrl } from '../api/client';
-import type { FilterState } from '../types';
+import type { AppTab, CohortResponse, FilterState } from '../types';
 
 interface HeaderProps {
+  activeTab: AppTab;
+  onTabChange: (tab: AppTab) => void;
   onUploadClick: () => void;
   onRefreshClick: () => void;
   onReportClick: () => void;
   filters: FilterState;
-  cohortTotal: number | null;
+  cohortData: CohortResponse | null;
+  loading: boolean;
 }
 
 export function Header({
+  activeTab,
+  onTabChange,
   onUploadClick,
   onRefreshClick,
   onReportClick,
   filters,
-  cohortTotal,
+  cohortData,
+  loading,
 }: HeaderProps) {
   const [dbOnline, setDbOnline] = useState<boolean | null>(null);
 
@@ -59,6 +59,14 @@ export function Header({
     };
   }, []);
 
+  const total = cohortData?.total ?? 0;
+  const reversibleCount =
+    cohortData?.results.filter((r) => r.reversibility_positive === true).length ?? 0;
+  const severeCount =
+    cohortData?.results.filter(
+      (r) => r.fev1_pred_percent !== null && r.fev1_pred_percent < 60,
+    ).length ?? 0;
+
   const handleExport = () => {
     const url = buildExportUrl(filters);
     const a = document.createElement('a');
@@ -69,146 +77,172 @@ export function Header({
     document.body.removeChild(a);
   };
 
+  const navItems: { id: AppTab; label: string; icon: React.ReactNode; badge?: string }[] = [
+    {
+      id: 'telemetry',
+      label: 'Kohort Telemetrisi',
+      icon: <BarChart3 className="w-4 h-4" />,
+      badge: total > 0 ? `${total}` : undefined,
+    },
+    {
+      id: 'spectral_curves',
+      label: 'Akış-Hacim Spektrogramı',
+      icon: <TrendingUp className="w-4 h-4" />,
+    },
+    {
+      id: 'clinical_ai',
+      label: 'Klinik Karar Destek & AI',
+      icon: <BrainCircuit className="w-4 h-4" />,
+      badge: 'ATS 2019',
+    },
+    {
+      id: 'ingestion_hub',
+      label: 'Cihaz & XML Almaç',
+      icon: <Cpu className="w-4 h-4" />,
+    },
+    {
+      id: 'research_export',
+      label: 'Araştırma & Excel',
+      icon: <FileSpreadsheet className="w-4 h-4" />,
+    },
+  ];
+
   return (
-    <header className="flex-shrink-0 flex flex-col select-none border-b border-[#8FA8C4]">
-      {/* ─── 1. En Üst Windows / HBYS Başlık Çubuğu ─── */}
-      <div className="hbys-sys-titlebar h-7 px-2 flex items-center justify-between">
-        <div className="flex items-center gap-2 min-w-0">
-          {/* Gazi Hastanesi Kırmızı İkon */}
-          <div className="w-4 h-4 rounded-full bg-[#B02A37] border border-white flex items-center justify-center flex-shrink-0">
-            <span className="text-[9px] font-bold text-white leading-none">G</span>
+    <header className="glass-hud flex-shrink-0 z-30 select-none">
+      {/* ─── Üst Telemetri & Marka Çubuğu ─── */}
+      <div className="h-13 px-4 flex items-center justify-between border-b border-slate-800/80">
+        {/* Sol: Fütüristik Logo & Başlık */}
+        <div className="flex items-center gap-3.5">
+          <div className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/30 border border-cyan-500/40 shadow-[0_0_15px_rgba(6,182,212,0.3)]">
+            <Activity className="w-5 h-5 text-cyan-400 animate-pulse" />
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-4 ring-slate-950 animate-ping" />
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-slate-950" />
           </div>
 
-          <span className="text-[12px] font-medium tracking-wide truncate">
-            NUCLEUS v9.40.66 - Gazi Üniversitesi Sağlık Araştırma ve Uygulama Merkezi [Hastane]
-          </span>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-extrabold tracking-wider text-base bg-gradient-to-r from-white via-slate-100 to-cyan-400 bg-clip-text text-transparent">
+                AEROFLOW PULSE
+              </span>
+              <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                DX 3.2
+              </span>
+              <span className="hidden md:inline-block text-[11px] text-slate-500 font-mono">
+                / PEDIATRIC SFT INTELLIGENCE
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400">
+              Vyaire MasterScreen SFT Ingestion & Kohort Karar Destek Sistemi
+            </p>
+          </div>
         </div>
 
-        {/* Windows Pencere Kontrolleri */}
-        <div className="flex items-center">
-          <button
-            className="w-7 h-5 flex items-center justify-center hover:bg-white/20 text-white/80 hover:text-white"
-            title="Simge Durumuna Küçült"
-          >
-            <Minus className="w-3.5 h-3.5" />
-          </button>
-          <button
-            className="w-7 h-5 flex items-center justify-center hover:bg-white/20 text-white/80 hover:text-white"
-            title="Ekranı Kapla"
-          >
-            <Square className="w-3 h-3" />
-          </button>
-          <button
-            className="w-8 h-5 flex items-center justify-center hover:bg-[#D32F2F] text-white/80 hover:text-white"
-            title="Kapat"
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
+        {/* Orta: Canlı Telemetri İstatistik Rozetleri */}
+        <div className="hidden lg:flex items-center gap-2.5">
+          <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-slate-950/60 border border-slate-800/80 text-xs">
+            <span className="text-slate-400">Kohort Kaydı:</span>
+            <span className="font-mono font-bold text-cyan-400">{total} hasta</span>
+          </div>
+
+          <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-slate-950/60 border border-slate-800/80 text-xs">
+            <span className="text-slate-400">Reversibilite:</span>
+            <span className="font-mono font-bold text-amber-400">
+              {total > 0 ? `${reversibleCount} Pozitif` : '—'}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-slate-950/60 border border-slate-800/80 text-xs">
+            <span className="text-slate-400">Ağır Obstrüksiyon:</span>
+            <span className="font-mono font-bold text-rose-400">
+              {severeCount} vaka
+            </span>
+          </div>
         </div>
-      </div>
 
-      {/* ─── 2. HBYS Ana Menü Çubuğu (Menu Bar) ─── */}
-      <div className="hbys-menubar flex items-center px-1 overflow-x-auto">
-        <div className="hbys-menu-item font-semibold">Genel</div>
-        <div className="hbys-menu-item font-semibold">Hasta Kayıt / Randevu</div>
-        <div className="hbys-menu-item font-semibold">Medikal Takip</div>
-        <div className="hbys-menu-item font-semibold">Laboratuvar</div>
-        <div className="hbys-menu-item font-semibold">Tetkik Sistemi</div>
-        <div className="hbys-menu-item font-bold text-[#0B4078] bg-[#D4E5F7] border-b border-[#0B4078]">
-          SFT / Solunum
-        </div>
-        <div className="hbys-menu-item font-semibold">Kan Bankası</div>
-        <div className="hbys-menu-item font-semibold">Finans</div>
-        <div className="hbys-menu-item font-semibold">Yatan Hasta</div>
-        <div className="hbys-menu-item font-semibold">Stok / Satınalma</div>
-        <div className="hbys-menu-item font-semibold">İnsan Kaynakları</div>
-        <div className="hbys-menu-item font-semibold">İdari Modüller</div>
-        <div className="hbys-menu-item font-semibold">Sistem Yönetimi</div>
-      </div>
-
-      {/* ─── 3. HBYS Araç Çubuğu (Quick Toolbar) ─── */}
-      <div className="hbys-toolbar h-8 px-2 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1">
-          <button
-            onClick={onRefreshClick}
-            className="hbys-tool-btn"
-            title="Sayfayı ve Kohort Verilerini Yenile"
+        {/* Sağ: Veritabanı Node Durumu & Hızlı Eylemler */}
+        <div className="flex items-center gap-2.5">
+          {/* DB Sağlık Rozeti */}
+          <div
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono border ${
+              dbOnline
+                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                : 'bg-rose-500/10 text-rose-400 border-rose-500/30'
+            }`}
+            title={dbOnline ? 'PostgreSQL 18 Düğüme Bağlı' : 'Veritabanı Çevrimdışı'}
           >
-            <RefreshCw className="w-3.5 h-3.5 text-[#14477D]" />
-            <span>Yenile</span>
-          </button>
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                dbOnline ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'
+              }`}
+            />
+            <Database className="w-3 h-3" />
+            <span className="hidden sm:inline">
+              {dbOnline ? 'DB CONNECTED' : 'OFFLINE'}
+            </span>
+          </div>
 
-          <button
-            onClick={onUploadClick}
-            className="hbys-tool-btn font-semibold text-[#0E3A68]"
-            title="Vyaire Medical SFT XML Dosyası Yükle"
-          >
-            <Upload className="w-3.5 h-3.5 text-[#185FA5]" />
-            <span>XML İçe Aktar</span>
-          </button>
-
-          <button
-            onClick={handleExport}
-            className="hbys-tool-btn"
-            title="Mevcut Kohortu Excel Dosyası Olarak İndir"
-          >
-            <FileSpreadsheet className="w-3.5 h-3.5 text-[#217346]" />
-            <span>Excel Aktar</span>
-          </button>
-
+          {/* Hızlı Eylem: Rapor */}
           <button
             onClick={onReportClick}
-            className="hbys-tool-btn"
-            title="Seçili Hasta İçin SFT Raporu Oluştur"
+            className="btn-cyber btn-cyber-outline text-xs"
+            title="Klinik Karar Destek Raporu"
           >
-            <FileText className="w-3.5 h-3.5 text-[#185FA5]" />
-            <span>SFT Raporu</span>
+            <FileText className="w-3.5 h-3.5 text-cyan-400" />
+            <span className="hidden sm:inline">Tıbbi Rapor</span>
           </button>
 
+          {/* Hızlı Eylem: XML Yükle */}
           <button
-            onClick={() => window.print()}
-            className="hbys-tool-btn"
-            title="Klinik Görünümü Yazdır"
+            onClick={onUploadClick}
+            className="btn-cyber btn-cyber-primary text-xs"
+            title="Vyaire SFT XML Dosyası Yükle"
           >
-            <Printer className="w-3.5 h-3.5 text-[#3C5775]" />
-            <span>Yazdır</span>
+            <Upload className="w-3.5 h-3.5" />
+            <span>XML Ingest</span>
           </button>
 
-          <div className="h-4 w-px bg-[#B0C4D8] mx-1" />
-
-          {/* Kohort Toplam Kayıt Rozeti */}
-          {cohortTotal !== null && (
-            <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-[#E4EEF8] border border-[#A7C2DC] text-[11px] font-medium text-[#113C68]">
-              <span>Kohort:</span>
-              <strong className="text-[#0E355E]">{cohortTotal}</strong>
-              <span className="text-[#4F6C8A]">test</span>
-            </div>
-          )}
+          {/* Hızlı Eylem: Yenile */}
+          <button
+            onClick={onRefreshClick}
+            disabled={loading}
+            className="p-1.5 rounded-lg bg-slate-900/60 border border-slate-700/80 text-slate-400 hover:text-white hover:border-slate-500 transition-all disabled:opacity-50"
+            title="Telemetri Verilerini Güncelle"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-cyan-400' : ''}`} />
+          </button>
         </div>
+      </div>
 
-        {/* Sağ Taraf: DB Durumu & Kullanıcı Birimi */}
-        <div className="flex items-center gap-3 text-xs">
-          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#F2F6FA] border border-[#B9CEDF]">
-            {dbOnline === null ? (
-              <div className="spinner" style={{ width: 12, height: 12 }} />
-            ) : dbOnline ? (
-              <div className="flex items-center gap-1 text-[11px] text-[#147530] font-semibold">
-                <Wifi className="w-3 h-3 text-[#1C8A39]" />
-                <span>DB: PostgreSQL 16 (Aktif)</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-1 text-[11px] text-[#B02A37] font-semibold">
-                <WifiOff className="w-3 h-3 text-[#B02A37]" />
-                <span>DB: Bağlantı Yok</span>
-              </div>
-            )}
-          </div>
-
-          <div className="hidden md:flex items-center gap-1 text-[11px] text-[#294B6F] font-semibold px-2 py-0.5 rounded bg-[#E5EEF7] border border-[#ABC4DC]">
-            <Activity className="w-3.5 h-3.5 text-[#003366]" />
-            <span>Çocuk Göğüs Hastalıkları & Alerji BD</span>
-          </div>
-        </div>
+      {/* ─── Alt Navigasyon Sekmeleri (Gerçek & Fonksiyonel) ─── */}
+      <div className="h-10 px-4 flex items-center gap-1 overflow-x-auto bg-slate-950/40 border-b border-slate-800/60">
+        {navItems.map((item) => {
+          const isActive = activeTab === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => onTabChange(item.id)}
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-medium transition-all duration-150 whitespace-nowrap ${
+                isActive
+                  ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/40 shadow-[0_0_12px_rgba(6,182,212,0.2)] font-semibold'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/50 border border-transparent'
+              }`}
+            >
+              {item.icon}
+              <span>{item.label}</span>
+              {item.badge && (
+                <span
+                  className={`px-1.5 py-0.2 rounded text-[10px] font-mono ${
+                    isActive
+                      ? 'bg-cyan-400/20 text-cyan-200'
+                      : 'bg-slate-800 text-slate-400'
+                  }`}
+                >
+                  {item.badge}
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
     </header>
   );

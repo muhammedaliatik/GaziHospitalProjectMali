@@ -1,162 +1,180 @@
 // ─────────────────────────────────────────────────────────────
 // components/PatientBanner.tsx
-// Gazi HBYS Hasta Künye Bandı (Screenshot 1 & 2 referanslı)
+// AEROFLOW PULSE DX — Futuristic Patient Biometric & SFT HUD
 // ─────────────────────────────────────────────────────────────
 
-import { Info, ShieldCheck, CheckSquare, Square } from 'lucide-react';
-import type { CohortPatient, HbysSubTab } from '../types';
-import { formatGender, formatName } from '../types';
+import {
+  User,
+  Activity,
+  Zap,
+  TrendingUp,
+  FileText,
+  ShieldCheck,
+  Calendar,
+  Ruler,
+  Weight,
+  Cpu,
+} from 'lucide-react';
+import type { CohortPatient } from '../types';
+import {
+  fev1Severity,
+  formatGender,
+  formatName,
+  severityClass,
+  severityLabel,
+} from '../types';
 
 interface PatientBannerProps {
   patient: CohortPatient | null;
-  activeSubTab: HbysSubTab;
-  onSubTabChange: (tab: HbysSubTab) => void;
-  showOnlyOpen: boolean;
-  onToggleOnlyOpen: () => void;
+  onShowCurves?: () => void;
+  onOpenReport?: () => void;
 }
 
 export function PatientBanner({
   patient,
-  activeSubTab,
-  onSubTabChange,
-  showOnlyOpen,
-  onToggleOnlyOpen,
+  onShowCurves,
+  onOpenReport,
 }: PatientBannerProps) {
-  // Varsayılan ya da seçili hasta bilgisi
-  const name = patient ? formatName(patient).toUpperCase() : 'DENEME HASTASI';
-  const genderCode = patient?.biological_gender?.toLowerCase().startsWith('m') ? 'E' : 'K';
-  const externalId = patient?.external_id || '7500607';
-  const tcNo = patient ? `284910${String(patient.patient_id).padStart(5, '0')}` : '12345678901';
-  const ageDisplay = patient?.age ? `${patient.age} yıl` : '12 yıl';
-  const birthDisplay = patient?.birth_date
-    ? new Date(patient.birth_date).toLocaleDateString('tr-TR')
-    : '14/05/2012';
-  const heightDisplay = patient?.height_m ? `${(patient.height_m * 100).toFixed(0)} cm` : '142 cm';
-  const weightDisplay = patient?.weight_kg ? `${patient.weight_kg} kg` : '38 kg';
-  const predModule = patient?.prediction_module || 'GLI 2012 (Global Lung Function)';
+  if (!patient) {
+    return (
+      <div className="glass-card px-4 py-2.5 rounded-xl border border-slate-800 flex items-center justify-between text-slate-500 text-xs">
+        <div className="flex items-center gap-2">
+          <User className="w-4 h-4 text-slate-600" />
+          <span>Telemetri incelemesi için tablodan bir hasta kaydı seçiniz.</span>
+        </div>
+        <span className="font-mono text-[10px] text-slate-600">
+          GLI-2012 PEDİATRİK REFERANS AKTİF
+        </span>
+      </div>
+    );
+  }
+
+  const sev = fev1Severity(patient.fev1_pred_percent);
+  const isReversible = patient.reversibility_positive;
+
+  // Mosteller Body Surface Area: sqrt((height_cm * weight_kg) / 3600)
+  const heightCm = patient.height_m ? patient.height_m * 100 : null;
+  const bsa =
+    heightCm && patient.weight_kg
+      ? Math.sqrt((heightCm * patient.weight_kg) / 3600).toFixed(2)
+      : null;
 
   return (
-    <div className="flex flex-col border-b border-[#96B5D4] bg-[#EDF3FA] flex-shrink-0">
-      {/* ─── Hasta Künye Bandı (Üst Satır) ─── */}
-      <div className="hbys-kunye-band px-3 py-1.5 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5 min-w-0">
-          {/* Mavi Hasta Sıra / Dosya Kutu Rozeti */}
-          <div className="px-2 py-0.5 rounded bg-[#18487A] text-white font-mono font-bold text-xs shadow-sm border border-[#0E3157] flex-shrink-0">
-            {externalId}
-          </div>
-
-          {/* Mavi Bilgi (i) İkonu */}
-          <div className="w-5 h-5 rounded-full bg-[#2068BA] text-white flex items-center justify-center flex-shrink-0 shadow-sm" title="Hasta Detay Bilgisi">
-            <Info className="w-3.5 h-3.5" />
-          </div>
-
-          {/* Hasta Adı & Detay Satırı */}
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="font-extrabold text-[13px] text-[#0A294C] tracking-wide truncate">
-                {name} - ({genderCode})
-              </span>
-              <span className="text-[10px] px-1.5 py-0.2 rounded bg-[#D3E5F8] text-[#124278] border border-[#A5C7EC] font-semibold">
-                Çocuk Alerji & Astım Polikliniği
-              </span>
-            </div>
-
-            <div className="text-[11px] text-[#28496C] flex items-center gap-2 flex-wrap font-medium leading-tight mt-0.5">
-              <span>
-                <strong className="text-[#133253]">Yaş:</strong> {birthDisplay} - {ageDisplay}
-              </span>
-              <span className="text-[#96B3CE]">|</span>
-              <span>
-                <strong className="text-[#133253]">Dosya No:</strong> {externalId}
-              </span>
-              <span className="text-[#96B3CE]">|</span>
-              <span>
-                <strong className="text-[#133253]">TC Kimlik No:</strong> {tcNo}
-              </span>
-              <span className="text-[#96B3CE]">|</span>
-              <span>
-                <strong className="text-[#133253]">Boy / Kilo:</strong> {heightDisplay} / {weightDisplay}
-              </span>
-              <span className="text-[#96B3CE]">|</span>
-              <span>
-                <strong className="text-[#133253]">Referans Modül:</strong> {predModule}
-              </span>
-            </div>
-          </div>
+    <div className="glass-card px-4 py-2.5 rounded-xl border border-cyan-500/25 shadow-[0_4px_25px_-5px_rgba(6,182,212,0.15)] flex flex-wrap items-center justify-between gap-3">
+      {/* Sol: Hasta Kimlik & Rozet */}
+      <div className="flex items-center gap-3">
+        <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/30 border border-cyan-500/40 text-cyan-300 font-bold font-mono text-sm shadow-[0_0_12px_rgba(6,182,212,0.25)]">
+          {patient.first_name ? patient.first_name[0] : 'P'}
+          <span className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-slate-950 flex items-center justify-center border border-cyan-500/50">
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+          </span>
         </div>
 
-        {/* Sağ Taraf: İletişim Onayı & Gazi Hastanesi Amblemi */}
-        <div className="flex items-center gap-3 flex-shrink-0">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-[#147530] bg-[#E2F5E7] px-2 py-1 rounded border border-[#A8DEB6]">
-            <ShieldCheck className="w-4 h-4 text-[#1E8E3E]" />
-            <span>İletişim Onayı Var</span>
+        <div>
+          <div className="flex items-center gap-2">
+            <h3 className="font-extrabold text-sm text-white tracking-wide">
+              {formatName(patient)}
+            </h3>
+            <span className="font-mono text-[11px] px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
+              {patient.external_id}
+            </span>
+            <span className="text-[11px] text-slate-400 font-medium">
+              ({formatGender(patient.biological_gender)})
+            </span>
           </div>
 
-          {/* Gazi Üniversitesi Tıp Fakültesi Hastanesi Logosu */}
-          <div className="w-8 h-8 rounded-full border border-[#B02A37] bg-white flex items-center justify-center p-0.5 shadow-sm" title="Gazi Üniversitesi Sağlık Araştırma ve Uygulama Merkezi">
-            <svg viewBox="0 0 100 100" className="w-full h-full">
-              <circle cx="50" cy="50" r="48" fill="#B02A37" />
-              <circle cx="50" cy="50" r="42" fill="#FFFFFF" />
-              {/* Crescent & Star / Medical Caduceus emblem representation */}
-              <circle cx="48" cy="50" r="28" fill="#B02A37" />
-              <circle cx="55" cy="50" r="24" fill="#FFFFFF" />
-              <polygon points="62,43 65,49 71,50 67,54 68,60 62,56 57,60 58,54 54,50 60,49" fill="#B02A37" />
-            </svg>
+          <div className="flex items-center gap-3 text-[11px] text-slate-400 font-mono mt-0.5">
+            <span className="flex items-center gap-1">
+              <Calendar className="w-3 h-3 text-slate-500" />
+              <span>{patient.age ? `${patient.age} Yaş` : '—'}</span>
+            </span>
+            <span>•</span>
+            <span className="flex items-center gap-1">
+              <Ruler className="w-3 h-3 text-slate-500" />
+              <span>{heightCm ? `${heightCm.toFixed(0)} cm` : '—'}</span>
+            </span>
+            <span>•</span>
+            <span className="flex items-center gap-1">
+              <Weight className="w-3 h-3 text-slate-500" />
+              <span>{patient.weight_kg ? `${patient.weight_kg} kg` : '—'}</span>
+            </span>
+            {bsa && (
+              <>
+                <span>•</span>
+                <span className="text-cyan-400">BSA: {bsa} m²</span>
+              </>
+            )}
           </div>
         </div>
       </div>
 
-      {/* ─── Alt Sekmeler (Hasta Özet Bilgileri, Arşiv...) ─── */}
-      <div className="flex items-center justify-between px-2 pt-1 border-t border-[#A8C2DC] bg-[#E3EDF7]">
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => onSubTabChange('ozet')}
-            className={`hbys-subtab ${activeSubTab === 'ozet' ? 'active' : ''}`}
-          >
-            Hasta Özet Bilgileri
-          </button>
-          <button
-            onClick={() => onSubTabChange('sft_parametreleri')}
-            className={`hbys-subtab ${activeSubTab === 'sft_parametreleri' ? 'active' : ''}`}
-          >
-            SFT Parametre & Kohort Listesi
-          </button>
-          <button
-            onClick={() => onSubTabChange('arsiv_dosya')}
-            className={`hbys-subtab ${activeSubTab === 'arsiv_dosya' ? 'active' : ''}`}
-          >
-            Arşiv Dosya Bilgileri
-          </button>
-          <button
-            onClick={() => onSubTabChange('ileri_tarihli')}
-            className={`hbys-subtab ${activeSubTab === 'ileri_tarihli' ? 'active' : ''}`}
-          >
-            İleri Tarihli Test / Tetkik Listesi
-          </button>
-          <button
-            onClick={() => onSubTabChange('farkli_merkez')}
-            className={`hbys-subtab ${activeSubTab === 'farkli_merkez' ? 'active' : ''}`}
-          >
-            Farklı Merkez İstekleri
-          </button>
+      {/* Orta: FEV1 & ATS/ERS Reversibilite Durumu */}
+      <div className="flex items-center gap-4">
+        {/* FEV1 %pred */}
+        <div className="flex flex-col items-center px-3 py-1 rounded-lg bg-slate-950/60 border border-slate-800">
+          <span className="text-[10px] text-slate-400 font-mono uppercase">
+            FEV₁ (%pred)
+          </span>
+          <div className="flex items-center gap-1.5">
+            <span className="font-mono font-extrabold text-sm text-white">
+              {patient.fev1_pred_percent
+                ? `%${patient.fev1_pred_percent.toFixed(0)}`
+                : '—'}
+            </span>
+            <span className={severityClass(sev)}>
+              {severityLabel(sev)}
+            </span>
+          </div>
         </div>
 
-        {/* Sağ Onay Kutuları */}
-        <div className="flex items-center gap-3 text-xs text-[#203D5E] font-medium pr-1">
-          <label className="flex items-center gap-1 cursor-pointer select-none" onClick={onToggleOnlyOpen}>
-            {showOnlyOpen ? (
-              <CheckSquare className="w-3.5 h-3.5 text-[#185392]" />
-            ) : (
-              <Square className="w-3.5 h-3.5 text-[#738FA8]" />
-            )}
-            <span>Sadece Açık Başvurular</span>
-          </label>
-
-          <label className="flex items-center gap-1 cursor-pointer select-none">
-            <CheckSquare className="w-3.5 h-3.5 text-[#185392]" />
-            <span>Tüm Merkezler</span>
-          </label>
+        {/* FEV1/FVC Oranı */}
+        <div className="flex flex-col items-center px-3 py-1 rounded-lg bg-slate-950/60 border border-slate-800">
+          <span className="text-[10px] text-slate-400 font-mono uppercase">
+            Tiffeneau (FEV₁/FVC)
+          </span>
+          <span className="font-mono font-extrabold text-sm text-cyan-300">
+            {patient.fev1_fvc_ratio
+              ? `%${(patient.fev1_fvc_ratio * 100).toFixed(1)}`
+              : '—'}
+          </span>
         </div>
+
+        {/* Reversibilite Rozeti */}
+        <div className="flex flex-col items-center px-3 py-1 rounded-lg bg-slate-950/60 border border-slate-800">
+          <span className="text-[10px] text-slate-400 font-mono uppercase">
+            Reversibilite
+          </span>
+          {isReversible === true ? (
+            <span className="badge-cyber bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-[0_0_12px_rgba(245,158,11,0.3)]">
+              <Zap className="w-3 h-3 text-amber-400" />
+              <span>POZİTİF (Astım)</span>
+            </span>
+          ) : isReversible === false ? (
+            <span className="badge-cyber bg-slate-800 text-slate-400 border-slate-700">
+              Negatif
+            </span>
+          ) : (
+            <span className="font-mono text-xs text-slate-500">Ölçülmedi</span>
+          )}
+        </div>
+      </div>
+
+      {/* Sağ: Hızlı Eylem Butonları */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={onShowCurves}
+          className="btn-cyber btn-cyber-primary text-xs"
+        >
+          <TrendingUp className="w-3.5 h-3.5" />
+          <span>Eğri Spektrogramı</span>
+        </button>
+        <button
+          onClick={onOpenReport}
+          className="btn-cyber btn-cyber-outline text-xs"
+        >
+          <FileText className="w-3.5 h-3.5 text-cyan-400" />
+          <span>Klinik Rapor</span>
+        </button>
       </div>
     </div>
   );
