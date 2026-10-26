@@ -156,6 +156,12 @@ export function formatNum(val: number | null, decimals = 2): string {
   return val.toFixed(decimals);
 }
 
+export function formatTiffeneau(ratio: number | null): string {
+  if (ratio === null || ratio === undefined) return '—';
+  const val = ratio > 1 ? ratio : ratio * 100;
+  return `%${val.toFixed(1)}`;
+}
+
 // ─── Navigation Tabs ──────────────────────────────────────────
 export type AppTab =
   | 'telemetry'        // Kohort Telemetrisi & Keşif Paneli

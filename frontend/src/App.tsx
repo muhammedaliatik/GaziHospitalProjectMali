@@ -1,7 +1,6 @@
 // ─────────────────────────────────────────────────────────────
 // App.tsx
-// AEROFLOW PULSE DX — Pediatric Pulmonary Dynamics Platform
-// Futuristic Clinical Telemetry & Automated Decision Support
+// Gazi SFT Klinik Platform — Ana Uygulama
 // ─────────────────────────────────────────────────────────────
 
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -24,9 +23,21 @@ import type {
   FilterState,
 } from './types';
 import { DEFAULT_FILTERS } from './types';
-import { Activity, TrendingUp, Sparkles, UserCheck } from 'lucide-react';
+import { TrendingUp } from 'lucide-react';
 
 export default function App() {
+  // ─── Tema Durumu ────────────────────────────────────────────
+  const [darkMode, setDarkMode] = useState(false);
+
+  useEffect(() => {
+    const html = document.documentElement;
+    if (darkMode) {
+      html.classList.add('dark');
+    } else {
+      html.classList.remove('dark');
+    }
+  }, [darkMode]);
+
   // ─── Aktif Navigasyon Sekmesi ────────────────────────────────
   const [activeTab, setActiveTab] = useState<AppTab>('telemetry');
 
@@ -119,8 +130,8 @@ export default function App() {
   );
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-[#080C14] text-slate-100 font-sans select-none">
-      {/* ─── 1. Fütüristik Command Header & Telemetri ─── */}
+    <div className={`flex flex-col h-screen overflow-hidden font-sans select-none bg-slate-100 dark:bg-[#0B1120] text-slate-900 dark:text-slate-100`}>
+      {/* ─── 1. Header & Navigasyon ─── */}
       <Header
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -130,14 +141,16 @@ export default function App() {
         filters={filters}
         cohortData={cohortData}
         loading={cohortLoading}
+        darkMode={darkMode}
+        onToggleDark={() => setDarkMode((d) => !d)}
       />
 
       {/* ─── 2. Ana Çalışma Alanı ─── */}
       <main className="flex-1 min-h-0 overflow-hidden relative">
-        {/* SEKME 1: Kohort Telemetrisi & Keşif Paneli */}
+        {/* SEKME 1: Kohort Telemetrisi */}
         {activeTab === 'telemetry' && (
           <div className="h-full flex min-h-0 overflow-hidden">
-            {/* Sol: Parametrik Filtre Matrisi */}
+            {/* Sol: Filtre Paneli */}
             <FilterPanel
               filters={filters}
               onChange={setFilters}
@@ -148,16 +161,16 @@ export default function App() {
               onSearchTermChange={setSearchTerm}
             />
 
-            {/* Sağ: Telemetri HUD & Kohort Tablosu */}
+            {/* Sağ: Kohort Tablosu */}
             <div className="flex-1 flex flex-col p-3 gap-3 min-w-0 overflow-hidden">
-              {/* Seçili Hasta HUD Bandı */}
+              {/* Seçili Hasta Bandı */}
               <PatientBanner
                 patient={selectedRow}
                 onShowCurves={() => setActiveTab('spectral_curves')}
                 onOpenReport={() => setShowReport(true)}
               />
 
-              {/* Kohort Veri Tablosu */}
+              {/* Kohort Tablosu */}
               <div className="flex-1 min-h-0 overflow-hidden">
                 <CohortTable
                   data={cohortData}
@@ -174,7 +187,7 @@ export default function App() {
           </div>
         )}
 
-        {/* SEKME 2: Akış-Hacim Spektrogramı (Pre/Post İkili Analiz) */}
+        {/* SEKME 2: Akış-Hacim Spektrogramı */}
         {activeTab === 'spectral_curves' && (
           <div className="h-full p-3 flex flex-col min-h-0">
             {selectedRow ? (
@@ -187,12 +200,12 @@ export default function App() {
                 onOpenReport={() => setShowReport(true)}
               />
             ) : (
-              <div className="h-full flex flex-col items-center justify-center p-8 text-center glass-card rounded-xl border border-slate-800">
-                <TrendingUp className="w-12 h-12 text-cyan-400 mb-3 animate-pulse" />
-                <h3 className="text-sm font-bold text-white mb-1">
+              <div className="h-full flex flex-col items-center justify-center p-8 text-center card rounded-xl">
+                <TrendingUp className="w-10 h-10 text-blue-500 mb-3" />
+                <h3 className="text-sm font-bold text-slate-800 dark:text-white mb-1">
                   Spektrogram İçin Hasta Seçiniz
                 </h3>
-                <p className="text-xs text-slate-400 max-w-sm mb-4">
+                <p className="text-xs text-slate-500 max-w-sm mb-4">
                   Akış-hacim döngüsünü incelemek için lütfen kohort listesinden bir kayıt seçiniz.
                 </p>
                 <button
@@ -206,7 +219,7 @@ export default function App() {
           </div>
         )}
 
-        {/* SEKME 3: Klinik Karar Destek & AI İçgörü Motoru */}
+        {/* SEKME 3: Klinik Karar Destek & AI */}
         {activeTab === 'clinical_ai' && (
           <ClinicalAIView
             patient={selectedRow}
@@ -215,7 +228,7 @@ export default function App() {
           />
         )}
 
-        {/* SEKME 4: XML Almaç & Cihaz Entegrasyon Terminali */}
+        {/* SEKME 4: XML İçe Aktar & Cihaz Entegrasyonu */}
         {activeTab === 'ingestion_hub' && (
           <IngestionHubView
             onIngestSuccess={() => {
@@ -224,7 +237,7 @@ export default function App() {
           />
         )}
 
-        {/* SEKME 5: Araştırma Veri Havuzu & Excel Dışa Aktarımı */}
+        {/* SEKME 5: Araştırma & Excel */}
         {activeTab === 'research_export' && (
           <ResearchExportView filters={filters} cohortData={cohortData} />
         )}

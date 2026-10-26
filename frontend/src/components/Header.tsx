@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────────────────────
 // components/Header.tsx
-// AEROFLOW PULSE DX — Futuristic Command Header & Telemetry Bar
+// Gazi SFT Klinik Platform — Komut Başlığı & Telemetri Çubuğu
 // ─────────────────────────────────────────────────────────────
 
 import { useEffect, useState } from 'react';
@@ -14,12 +14,11 @@ import {
   TrendingUp,
   BrainCircuit,
   Database,
+  Sun,
+  Moon,
   Cpu,
-  ShieldCheck,
-  CheckCircle2,
-  AlertCircle,
 } from 'lucide-react';
-import { fetchHealth, buildExportUrl, downloadCohortExcel } from '../api/client';
+import { fetchHealth, downloadCohortExcel } from '../api/client';
 import type { AppTab, CohortResponse, FilterState } from '../types';
 
 interface HeaderProps {
@@ -31,6 +30,8 @@ interface HeaderProps {
   filters: FilterState;
   cohortData: CohortResponse | null;
   loading: boolean;
+  darkMode: boolean;
+  onToggleDark: () => void;
 }
 
 export function Header({
@@ -42,6 +43,8 @@ export function Header({
   filters,
   cohortData,
   loading,
+  darkMode,
+  onToggleDark,
 }: HeaderProps) {
   const [dbOnline, setDbOnline] = useState<boolean | null>(null);
 
@@ -95,7 +98,7 @@ export function Header({
     },
     {
       id: 'ingestion_hub',
-      label: 'Cihaz & XML Almaç',
+      label: 'XML İçe Aktar',
       icon: <Cpu className="w-4 h-4" />,
     },
     {
@@ -107,132 +110,140 @@ export function Header({
 
   return (
     <header className="glass-hud flex-shrink-0 z-30 select-none">
-      {/* ─── Üst Telemetri & Marka Çubuğu ─── */}
-      <div className="h-13 px-4 flex items-center justify-between border-b border-slate-800/80">
-        {/* Sol: Fütüristik Logo & Başlık */}
+      {/* ─── Üst Marka & Eylem Çubuğu ─── */}
+      <div className="h-16 px-5 flex items-center justify-between border-b border-slate-200 dark:border-slate-800">
+        {/* Sol: Logo & Başlık */}
         <div className="flex items-center gap-3.5">
-          <div className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/30 border border-cyan-500/40 shadow-[0_0_15px_rgba(6,182,212,0.3)]">
-            <Activity className="w-5 h-5 text-cyan-400 animate-pulse" />
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-4 ring-slate-950 animate-ping" />
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-slate-950" />
+          <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-blue-50 dark:bg-slate-800 border border-blue-200 dark:border-slate-700">
+            <Activity className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" />
           </div>
 
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-extrabold tracking-wider text-base bg-gradient-to-r from-white via-slate-100 to-cyan-400 bg-clip-text text-transparent">
-                AEROFLOW PULSE
+              <span className="font-extrabold tracking-tight text-base text-slate-900 dark:text-white">
+                Gazi SFT Klinik Platform
               </span>
-              <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
-                DX 3.2
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700">
+                v3.2
               </span>
-              <span className="hidden md:inline-block text-[11px] text-slate-500 font-mono">
-                / PEDIATRIC SFT INTELLIGENCE
+              <span className="hidden md:inline-block text-xs text-slate-600 dark:text-slate-400 font-medium">
+                — Pediatrik Solunum Fonksiyon Testi
               </span>
             </div>
-            <p className="text-[11px] text-slate-400">
-              Vyaire MasterScreen SFT Ingestion & Kohort Karar Destek Sistemi
+            <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5 font-medium">
+              Vyaire MasterScreen SFT · Kohort Analizi & Klinik Karar Desteği
             </p>
           </div>
         </div>
 
-        {/* Orta: Canlı Telemetri İstatistik Rozetleri */}
+        {/* Orta: Canlı İstatistik Rozetleri */}
         <div className="hidden lg:flex items-center gap-2.5">
-          <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-slate-950/60 border border-slate-800/80 text-xs">
-            <span className="text-slate-400">Kohort Kaydı:</span>
-            <span className="font-mono font-bold text-cyan-400">{total} hasta</span>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-xs">
+            <span className="text-slate-600 dark:text-slate-400 font-medium">Kohort Kaydı:</span>
+            <span className="font-mono font-bold text-blue-700 dark:text-blue-400">{total} hasta</span>
           </div>
 
-          <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-slate-950/60 border border-slate-800/80 text-xs">
-            <span className="text-slate-400">Reversibilite:</span>
-            <span className="font-mono font-bold text-amber-400">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-xs">
+            <span className="text-slate-600 dark:text-slate-400 font-medium">Reversibilite:</span>
+            <span className="font-mono font-bold text-amber-700 dark:text-amber-400">
               {total > 0 ? `${reversibleCount} Pozitif` : '—'}
             </span>
           </div>
 
-          <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-slate-950/60 border border-slate-800/80 text-xs">
-            <span className="text-slate-400">Ağır Obstrüksiyon:</span>
-            <span className="font-mono font-bold text-rose-400">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-xs">
+            <span className="text-slate-600 dark:text-slate-400 font-medium">Ağır Obstrüksiyon:</span>
+            <span className="font-mono font-bold text-red-700 dark:text-red-400">
               {severeCount} vaka
             </span>
           </div>
         </div>
 
-        {/* Sağ: Veritabanı Node Durumu & Hızlı Eylemler */}
-        <div className="flex items-center gap-2.5">
-          {/* DB Sağlık Rozeti */}
+        {/* Sağ: Durum & Eylemler */}
+        <div className="flex items-center gap-2">
+          {/* DB Durumu */}
           <div
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono border ${
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono font-semibold border ${
               dbOnline
-                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                : 'bg-rose-500/10 text-rose-400 border-rose-500/30'
+                ? 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800'
+                : 'bg-red-50 text-red-800 border-red-300 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800'
             }`}
-            title={dbOnline ? 'PostgreSQL 18 Düğüme Bağlı' : 'Veritabanı Çevrimdışı'}
+            title={dbOnline ? 'PostgreSQL 18 Bağlı' : 'Veritabanı Çevrimdışı'}
           >
             <span
-              className={`w-1.5 h-1.5 rounded-full ${
-                dbOnline ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'
+              className={`w-2 h-2 rounded-full ${
+                dbOnline ? 'bg-emerald-600 dark:bg-emerald-400 animate-pulse' : 'bg-red-600'
               }`}
             />
-            <Database className="w-3 h-3" />
+            <Database className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">
-              {dbOnline ? 'DB CONNECTED' : 'OFFLINE'}
+              {dbOnline === null ? 'Kontrol...' : dbOnline ? 'Bağlı' : 'Çevrimdışı'}
             </span>
           </div>
 
-          {/* Hızlı Eylem: Rapor */}
+          {/* Tıbbi Rapor */}
           <button
             onClick={onReportClick}
-            className="btn-cyber btn-cyber-outline text-xs"
+            className="btn-cyber btn-cyber-outline text-xs py-1.5"
             title="Klinik Karar Destek Raporu"
           >
-            <FileText className="w-3.5 h-3.5 text-cyan-400" />
+            <FileText className="w-3.5 h-3.5 text-blue-600 dark:text-slate-400" />
             <span className="hidden sm:inline">Tıbbi Rapor</span>
           </button>
 
-          {/* Hızlı Eylem: XML Yükle */}
+          {/* XML İçe Aktar */}
           <button
             onClick={onUploadClick}
-            className="btn-cyber btn-cyber-primary text-xs"
+            className="btn-cyber btn-cyber-primary text-xs py-1.5"
             title="Vyaire SFT XML Dosyası Yükle"
           >
             <Upload className="w-3.5 h-3.5" />
-            <span>XML Ingest</span>
+            <span>XML İçe Aktar</span>
           </button>
 
-          {/* Hızlı Eylem: Yenile */}
+          {/* Yenile */}
           <button
             onClick={onRefreshClick}
             disabled={loading}
-            className="p-1.5 rounded-lg bg-slate-900/60 border border-slate-700/80 text-slate-400 hover:text-white hover:border-slate-500 transition-all disabled:opacity-50"
+            className="p-2 rounded-lg bg-white dark:bg-slate-900/60 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all disabled:opacity-50"
             title="Telemetri Verilerini Güncelle"
           >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-cyan-400' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-blue-600 dark:text-blue-400' : ''}`} />
+          </button>
+
+          {/* Tema Toggle */}
+          <button
+            onClick={onToggleDark}
+            className="p-2 rounded-lg bg-white dark:bg-slate-900/60 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+            title={darkMode ? 'Açık Moda Geç' : 'Koyu Moda Geç'}
+          >
+            {darkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-700" />}
           </button>
         </div>
       </div>
 
-      {/* ─── Alt Navigasyon Sekmeleri (Gerçek & Fonksiyonel) ─── */}
-      <div className="h-10 px-4 flex items-center gap-1 overflow-x-auto bg-slate-950/40 border-b border-slate-800/60">
+      {/* ─── Alt Navigasyon Sekmeleri (Yüksek Kontrastlı) ─── */}
+      <div className="h-11 px-4 flex items-center gap-1.5 overflow-x-auto bg-slate-100 dark:bg-slate-950/70 border-b border-slate-200 dark:border-slate-800">
         {navItems.map((item) => {
           const isActive = activeTab === item.id;
           return (
             <button
               key={item.id}
               onClick={() => onTabChange(item.id)}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-medium transition-all duration-150 whitespace-nowrap ${
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs transition-all duration-150 whitespace-nowrap ${
                 isActive
-                  ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/40 shadow-[0_0_12px_rgba(6,182,212,0.2)] font-semibold'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/50 border border-transparent'
+                  ? 'bg-white dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-slate-300 dark:border-blue-700/60 font-bold shadow-xs'
+                  : 'text-slate-700 dark:text-slate-300 font-semibold hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/70 dark:hover:bg-slate-900/60 border border-transparent'
               }`}
             >
               {item.icon}
               <span>{item.label}</span>
               {item.badge && (
                 <span
-                  className={`px-1.5 py-0.2 rounded text-[10px] font-mono ${
+                  className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-bold ${
                     isActive
-                      ? 'bg-cyan-400/20 text-cyan-200'
-                      : 'bg-slate-800 text-slate-400'
+                      ? 'bg-blue-100 dark:bg-blue-800/50 text-blue-800 dark:text-blue-200'
+                      : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
                   }`}
                 >
                   {item.badge}
