@@ -108,6 +108,38 @@ export function buildExportUrl(filters: Partial<FilterState>): string {
   return `/api/cohort/export?${params.toString()}`;
 }
 
+export async function downloadCohortExcel(filters: Partial<FilterState>): Promise<void> {
+  try {
+    const res = await api.get('/api/cohort/export', {
+      params: buildParams(filters),
+      responseType: 'blob',
+    });
+
+    let filename = `AEROFLOW_SFT_Kohort_${new Date().toISOString().slice(0, 10)}.xlsx`;
+    const disposition = res.headers['content-disposition'];
+    if (disposition && disposition.includes('filename=')) {
+      const match = disposition.match(/filename="?([^";]+)"?/);
+      if (match && match[1]) {
+        filename = match[1];
+      }
+    }
+
+    const blob = new Blob([res.data], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename.endsWith('.xlsx') ? filename : `${filename}.xlsx`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
 // ─── XML Yükleme ─────────────────────────────────────────────
 export async function uploadXmlFiles(files: File[]): Promise<UploadResponse> {
   try {

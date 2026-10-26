@@ -15,7 +15,7 @@ import {
   Filter,
 } from 'lucide-react';
 import type { CohortResponse, FilterState } from '../types';
-import { buildExportUrl } from '../api/client';
+import { buildExportUrl, downloadCohortExcel } from '../api/client';
 
 interface ResearchExportViewProps {
   filters: FilterState;
@@ -45,16 +45,15 @@ export function ResearchExportView({
   ).length;
   const femaleCount = results.length - maleCount;
 
-  const handleDownloadExcel = () => {
+  const handleDownloadExcel = async () => {
     setDownloading(true);
-    const url = buildExportUrl(filters);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = '';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => setDownloading(false), 1500);
+    try {
+      await downloadCohortExcel(filters);
+    } catch (err: any) {
+      console.error('Excel indirme hatası:', err);
+    } finally {
+      setDownloading(false);
+    }
   };
 
   return (

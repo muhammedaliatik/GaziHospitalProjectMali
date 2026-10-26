@@ -19,7 +19,7 @@ import {
   CheckCircle2,
   AlertCircle,
 } from 'lucide-react';
-import { fetchHealth, buildExportUrl } from '../api/client';
+import { fetchHealth, buildExportUrl, downloadCohortExcel } from '../api/client';
 import type { AppTab, CohortResponse, FilterState } from '../types';
 
 interface HeaderProps {
@@ -67,14 +67,12 @@ export function Header({
       (r) => r.fev1_pred_percent !== null && r.fev1_pred_percent < 60,
     ).length ?? 0;
 
-  const handleExport = () => {
-    const url = buildExportUrl(filters);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = '';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+  const handleExport = async () => {
+    try {
+      await downloadCohortExcel(filters);
+    } catch (err: any) {
+      console.error('Excel indirme hatası:', err);
+    }
   };
 
   const navItems: { id: AppTab; label: string; icon: React.ReactNode; badge?: string }[] = [
